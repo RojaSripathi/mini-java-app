@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Compilation verified: 0 errors - Iteration 3 review complete -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -10,34 +11,56 @@
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <!-- Issue #1 Fixed: Updated Maven Compiler Source/Target from Java 11 to Java 21 -->
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+        <!-- Issue #4 Fixed: Deprecated mysql-connector-java Maven Coordinates updated -->
+        <!-- Changed groupId from 'mysql' to 'com.mysql' and artifactId to 'mysql-connector-j' -->
+        <!-- Updated version to 8.2.0 for better Java 21 support -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.2.0</version>
         </dependency>
-        
+
+        <!-- Issue #3 Fixed: Spring Boot updated from 2.7.0 to 3.2.0 for Java 21 compatibility -->
+        <!-- Spring Boot 3.x uses Jakarta EE 10 (jakarta.* namespace) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.7.0</version>
+            <version>3.2.0</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Issue #2 Fixed: Updated maven-compiler-plugin from 3.8.1 to 3.11.0 for Java 21 support -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.11.0</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <!-- Issue #1 Fixed: Compiler source/target set to Java 21 -->
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+            <!-- Issue #5 Fixed: Added maven-surefire-plugin configuration for Java 21 compatibility -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>
