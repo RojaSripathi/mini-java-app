@@ -1,0 +1,57 @@
+{
+  "family": "tenant-admin-task",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::{{ACCOUNT_ID}}:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::{{ACCOUNT_ID}}:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "tenant-admin",
+      "image": "{{IMAGE_URI}}",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        },
+        {
+          "containerPort": 8081,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        { "name": "SERVER_PORT",        "value": "8080" },
+        { "name": "HEALTH_CHECK_PORT",  "value": "8081" },
+        { "name": "CONFIG_FILE_PATH",   "value": "/opt/app/config/app.properties" },
+        { "name": "LOG_FILE_PATH",      "value": "/var/log/mini-app/mini-app.log" },
+        { "name": "LOG_DIR",            "value": "/var/log/mini-app" },
+        { "name": "TZ",                 "value": "UTC" },
+        { "name": "JAVA_OPTS",          "value": "-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom" }
+      ],
+      "secrets": [
+        { "name": "DB_URL",             "valueFrom": "arn:aws:ssm:{{AWS_REGION}}:{{ACCOUNT_ID}}:parameter/tenant-admin/DB_URL" },
+        { "name": "DB_USERNAME",        "valueFrom": "arn:aws:ssm:{{AWS_REGION}}:{{ACCOUNT_ID}}:parameter/tenant-admin/DB_USERNAME" },
+        { "name": "DB_PASSWORD",        "valueFrom": "arn:aws:ssm:{{AWS_REGION}}:{{ACCOUNT_ID}}:parameter/tenant-admin/DB_PASSWORD" },
+        { "name": "REDIS_HOST",         "valueFrom": "arn:aws:ssm:{{AWS_REGION}}:{{ACCOUNT_ID}}:parameter/tenant-admin/REDIS_HOST" },
+        { "name": "REDIS_PORT",         "valueFrom": "arn:aws:ssm:{{AWS_REGION}}:{{ACCOUNT_ID}}:parameter/tenant-admin/REDIS_PORT" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/tenant-admin",
+          "awslogs-region": "{{AWS_REGION}}",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+# =============================================================================
+# .dockerignore – Tenant Admin (mini-java-app)
+# =============================================================================
+
+# Build output
+target/
+
+# Maven wrapper (NEVER used inside Docker – system mvn is used instead)
+mvnw
+mvnw.cmd
+.mvn/
+
+# Gradle wrapper (not applicable but excluded for safety)
+gradlew
+gradlew.bat
+gradle/wrapper/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# IDE / editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# OS artefacts
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Test reports
+**/surefire-reports/
+**/failsafe-reports/
+
+# Logs
+*.log
+logs/
+
+# Docker files (not needed inside image)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Scripts (not needed inside image)
+scripts/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

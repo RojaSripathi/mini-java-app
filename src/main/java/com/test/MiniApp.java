@@ -11,18 +11,28 @@ import java.util.Properties;
  */
 public class MiniApp {
     
-    // BLOCKER: Hardcoded port number
-    private static final int SERVER_PORT = 8080;
+    // blocker-7: Externalized port via environment variable (was hardcoded 8080)
+    private static final int SERVER_PORT = Integer.parseInt(System.getenv().getOrDefault("SERVER_PORT", "8080"));
     
-    // BLOCKER: Hardcoded absolute file path
-    private static final String CONFIG_FILE_PATH = "/opt/app/config/app.properties";
-    private static final String LOG_FILE_PATH = "/var/log/mini-app.log";
+    // blocker-1: Externalized config file path via environment variable (was "/opt/app/config/app.properties")
+    private static final String CONFIG_FILE_PATH = System.getenv().getOrDefault("CONFIG_FILE_PATH", "/opt/app/config/app.properties");
+    // blocker-2: Externalized log file path via environment variable (was "/var/log/mini-app.log")
+    private static final String LOG_FILE_PATH = System.getenv().getOrDefault("LOG_FILE_PATH", "/var/log/mini-app.log");
     
     public static void main(String[] args) {
         System.out.println("Starting Mini Java Application...");
         
         MiniApp app = new MiniApp();
         app.initializeApplication();
+
+        // Health check endpoint for container liveness/readiness probes
+        HealthController healthController = new HealthController();
+        try {
+            healthController.start();
+        } catch (IOException e) {
+            System.err.println("Failed to start health check endpoint: " + e.getMessage());
+        }
+
         app.startServer();
     }
     
@@ -40,7 +50,7 @@ public class MiniApp {
     
     private void loadConfiguration() {
         try {
-            // BLOCKER: Hardcoded absolute file path
+            // blocker-1: CONFIG_FILE_PATH now sourced from environment variable
             File configFile = new File(CONFIG_FILE_PATH);
             if (configFile.exists()) {
                 Properties props = new Properties();
@@ -56,8 +66,8 @@ public class MiniApp {
     
     private void initializeLogging() {
         try {
-            // BLOCKER: Hardcoded absolute path for log file
-            File logDir = new File("/var/log");
+            // blocker-3 & blocker-4: Log directory now derived from LOG_FILE_PATH environment variable (was hardcoded "/var/log")
+            File logDir = new File(System.getenv().getOrDefault("LOG_DIR", new File(LOG_FILE_PATH).getParent() != null ? new File(LOG_FILE_PATH).getParent() : "/var/log"));
             if (!logDir.exists()) {
                 logDir.mkdirs();
             }
@@ -75,7 +85,7 @@ public class MiniApp {
     
     private void startServer() {
         try {
-            // BLOCKER: Hardcoded port number
+            // blocker-8: SERVER_PORT now sourced from environment variable (was hardcoded SERVER_PORT constant 8080)
             ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
             System.out.println("Server started on port: " + SERVER_PORT);
             System.out.println("Server ready to accept connections...");

@@ -18,9 +18,10 @@ public class DatabaseService {
     private static final String DB_USERNAME = "root";
     private static final String DB_PASSWORD = "password123";
     
-    // BLOCKER: Hardcoded cache server details
-    private static final String REDIS_HOST = "127.0.0.1";
-    private static final int REDIS_PORT = 6379;
+    // blocker-9: Externalized Redis host via environment variable (was hardcoded "127.0.0.1")
+    private static final String REDIS_HOST = System.getenv().getOrDefault("REDIS_HOST", "127.0.0.1");
+    // blocker-6: Externalized Redis port via environment variable (was hardcoded 6379)
+    private static final int REDIS_PORT = Integer.parseInt(System.getenv().getOrDefault("REDIS_PORT", "6379"));
     
     // BLOCKER: Hardcoded API endpoints
     private static final String EXTERNAL_API_URL = "http://api.example.com:8080/v1";
@@ -35,11 +36,16 @@ public class DatabaseService {
             // BLOCKER: Hardcoded JDBC driver
             Class.forName("com.mysql.cj.jdbc.Driver");
             
-            // BLOCKER: Hardcoded connection string and credentials
-            connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+            // blocker-5: DatabaseService now reads connection config from environment variables
+            // to decouple from hardcoded infrastructure, enabling independent microservice deployment
+            String dbUrl = System.getenv().getOrDefault("DB_URL", DB_URL);
+            String dbUsername = System.getenv().getOrDefault("DB_USERNAME", DB_USERNAME);
+            String dbPassword = System.getenv().getOrDefault("DB_PASSWORD", DB_PASSWORD);
+
+            connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
             
-            System.out.println("Connected to database: " + DB_URL);
-            System.out.println("Using username: " + DB_USERNAME);
+            System.out.println("Connected to database: " + dbUrl);
+            System.out.println("Using username: " + dbUsername);
             
             // BLOCKER: Hardcoded cache connection
             connectToCache();
@@ -55,7 +61,7 @@ public class DatabaseService {
     }
     
     private void connectToCache() {
-        // BLOCKER: Hardcoded Redis connection details
+        // blocker-9 & blocker-6: Redis host and port now sourced from environment variables
         System.out.println("Connecting to Redis cache at: " + REDIS_HOST + ":" + REDIS_PORT);
         // Simulate cache connection
     }

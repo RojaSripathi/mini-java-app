@@ -1,0 +1,62 @@
+version: "3.9"
+
+# =============================================================================
+# docker-compose.yml – Tenant Admin (mini-java-app)
+# Application service ONLY – external services (DB, Redis, etc.) are provided
+# separately via environment variables.
+# =============================================================================
+
+services:
+  tenant-admin:
+    image: tenant-admin:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tenant-admin
+    ports:
+      - "8080:8080"   # Application port
+      - "8081:8081"   # Health-check port
+    environment:
+      # JVM settings
+      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+      # Application ports
+      SERVER_PORT: "8080"
+      HEALTH_CHECK_PORT: "8081"
+      # File paths
+      CONFIG_FILE_PATH: "/opt/app/config/app.properties"
+      LOG_FILE_PATH: "/var/log/mini-app/mini-app.log"
+      LOG_DIR: "/var/log/mini-app"
+      # Database – override with real values
+      DB_URL: "${DB_URL:-jdbc:mysql://db-host:3306/mini_app_db}"
+      DB_USERNAME: "${DB_USERNAME:-root}"
+      DB_PASSWORD: "${DB_PASSWORD:-changeme}"
+      # Redis – override with real values
+      REDIS_HOST: "${REDIS_HOST:-redis-host}"
+      REDIS_PORT: "${REDIS_PORT:-6379}"
+      # External services – override with real values
+      EXTERNAL_API_BASE_URL: "${EXTERNAL_API_BASE_URL:-http://api.example.com/v1}"
+      PAYMENT_SERVICE_URL: "${PAYMENT_SERVICE_URL:-https://payment.example.com/process}"
+      # Timezone
+      TZ: "UTC"
+    volumes:
+      - app-logs:/var/log/mini-app
+      - app-config:/opt/app/config
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  app-logs:
+    driver: local
+  app-config:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
