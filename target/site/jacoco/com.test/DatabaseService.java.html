@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatabaseService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mini-java-app</a> &gt; <a href="index.source.html" class="el_package">com.test</a> &gt; <span class="el_source">DatabaseService.java</span></div><h1>DatabaseService.java</h1><pre class="source lang-java linenums">package com.test;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+/**
+ * Database service with hardcoded connection details - intentional containerization blockers.
+ *
+ * Java 21 Upgrade Notes:
+ *  - Removed legacy Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;) call (was at line 37).
+ *    Since JDBC 4.0 (Java 6+), drivers are auto-loaded via ServiceLoader from the classpath.
+ *    Explicit Class.forName() is unnecessary and considered a legacy anti-pattern.
+ *  - All other JDBC APIs (Connection, DriverManager, PreparedStatement) are fully
+ *    compatible with Java 21 — no further changes required.
+ *  - No javax.* → jakarta.* migration needed in this class (no EE imports used).
+ *  - Updated MySQL dependency from mysql:mysql-connector-java to com.mysql:mysql-connector-j
+ *    in pom.xml for better Java 21 support.
+ *  - Iteration 3 review: No compilation errors detected; file verified clean.
+ */
+<span class="fc" id="L22">public class DatabaseService {</span>
+
+    // BLOCKER: Hardcoded database connection details
+    private static final String DB_HOST = &quot;localhost&quot;;
+    private static final String DB_PORT = &quot;3306&quot;;
+    private static final String DB_NAME = &quot;mini_app_db&quot;;
+    private static final String DB_URL = &quot;jdbc:mysql://&quot; + DB_HOST + &quot;:&quot; + DB_PORT + &quot;/&quot; + DB_NAME;
+    private static final String DB_USERNAME = &quot;root&quot;;
+    private static final String DB_PASSWORD = &quot;password123&quot;;
+
+    // BLOCKER: Hardcoded cache server details
+    private static final String REDIS_HOST = &quot;127.0.0.1&quot;;
+    private static final int REDIS_PORT = 6379;
+
+    // BLOCKER: Hardcoded API endpoints
+    private static final String EXTERNAL_API_URL = &quot;http://api.example.com:8080/v1&quot;;
+    private static final String PAYMENT_SERVICE_URL = &quot;https://payment.internal.company.com/process&quot;;
+
+    private Connection connection;
+
+    public void connect() {
+        try {
+<span class="fc" id="L44">            System.out.println(&quot;Connecting to database...&quot;);</span>
+
+            // Java 21 Fix: Removed legacy Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;).
+            // JDBC 4.0+ (Java 6+) auto-discovers drivers via ServiceLoader — explicit
+            // Class.forName() is no longer needed and is considered a legacy pattern.
+
+            // BLOCKER: Hardcoded connection string and credentials
+<span class="nc" id="L51">            connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);</span>
+
+<span class="nc" id="L53">            System.out.println(&quot;Connected to database: &quot; + DB_URL);</span>
+<span class="nc" id="L54">            System.out.println(&quot;Using username: &quot; + DB_USERNAME);</span>
+
+            // BLOCKER: Hardcoded cache connection
+<span class="nc" id="L57">            connectToCache();</span>
+
+            // BLOCKER: Hardcoded external service URLs
+<span class="nc" id="L60">            initializeExternalServices();</span>
+
+<span class="fc" id="L62">        } catch (SQLException e) {</span>
+<span class="fc" id="L63">            System.err.println(&quot;Database connection failed: &quot; + e.getMessage());</span>
+<span class="nc" id="L64">        }</span>
+<span class="fc" id="L65">    }</span>
+
+    private void connectToCache() {
+        // BLOCKER: Hardcoded Redis connection details
+<span class="fc" id="L69">        System.out.println(&quot;Connecting to Redis cache at: &quot; + REDIS_HOST + &quot;:&quot; + REDIS_PORT);</span>
+        // Simulate cache connection
+<span class="fc" id="L71">    }</span>
+
+    private void initializeExternalServices() {
+        // BLOCKER: Hardcoded external service URLs
+<span class="fc" id="L75">        System.out.println(&quot;Initializing external API: &quot; + EXTERNAL_API_URL);</span>
+<span class="fc" id="L76">        System.out.println(&quot;Initializing payment service: &quot; + PAYMENT_SERVICE_URL);</span>
+<span class="fc" id="L77">    }</span>
+
+    public void executeQuery(String sql) {
+        try {
+<span class="pc bpc" id="L81" title="3 of 4 branches missed.">            if (connection != null &amp;&amp; !connection.isClosed()) {</span>
+<span class="nc" id="L82">                PreparedStatement stmt = connection.prepareStatement(sql);</span>
+                // BLOCKER: Hardcoded query timeout
+<span class="nc" id="L84">                stmt.setQueryTimeout(30);</span>
+
+<span class="nc" id="L86">                System.out.println(&quot;Executing query: &quot; + sql);</span>
+<span class="nc" id="L87">                stmt.execute();</span>
+<span class="nc" id="L88">                stmt.close();</span>
+            }
+<span class="nc" id="L90">        } catch (SQLException e) {</span>
+<span class="nc" id="L91">            System.err.println(&quot;Query execution failed: &quot; + e.getMessage());</span>
+<span class="fc" id="L92">        }</span>
+<span class="fc" id="L93">    }</span>
+
+    public void disconnect() {
+        try {
+<span class="pc bpc" id="L97" title="3 of 4 branches missed.">            if (connection != null &amp;&amp; !connection.isClosed()) {</span>
+<span class="nc" id="L98">                connection.close();</span>
+<span class="nc" id="L99">                System.out.println(&quot;Database connection closed&quot;);</span>
+            }
+<span class="nc" id="L101">        } catch (SQLException e) {</span>
+<span class="nc" id="L102">            System.err.println(&quot;Failed to close database connection: &quot; + e.getMessage());</span>
+<span class="fc" id="L103">        }</span>
+<span class="fc" id="L104">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
